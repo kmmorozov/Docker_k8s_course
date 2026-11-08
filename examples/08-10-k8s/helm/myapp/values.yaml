@@ -1,0 +1,17 @@
+replicaCount: 2
+image:
+  repository: registry.example.com/myapp
+  tag: "2.4.1"
+  pullPolicy: IfNotPresent
+appEnv: staging
+logLevel: info
+service:
+  type: ClusterIP
+  port: 80
+ingress:
+  enabled: true
+  className: nginx
+  host: staging.example.com
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits:   { cpu: 500m, memory: 256Mi }

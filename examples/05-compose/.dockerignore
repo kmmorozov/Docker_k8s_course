@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.md
+.env
+.env.*
+node_modules
+__pycache__
+*.pyc
+tests
+Dockerfile
+docker-compose*.yml

@@ -1,0 +1,7 @@
+# Пособие 8.4
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    environment: staging

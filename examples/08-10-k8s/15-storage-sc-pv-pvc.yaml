@@ -1,0 +1,22 @@
+# Хранение: StorageClass + PV + PVC (пособие 9.3)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata: { name: nfs-csi }
+provisioner: nfs.csi.k8s.io
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata: { name: pv-nfs-01 }
+spec:
+  capacity: { storage: 10Gi }
+  accessModes: [ReadWriteMany]
+  nfs: { server: nfs.local, path: /exports/pv01 }
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: app-data }
+spec:
+  storageClassName: nfs-csi
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 5Gi } }

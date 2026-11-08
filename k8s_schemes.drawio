@@ -1,0 +1,333 @@
+<mxfile host="app.diagrams.net" modified="2026-11-08T12:00:00.000Z" agent="Kimi Code" version="24.7.17" type="device">
+  <diagram id="p1-arch" name="01. Архитектура кластера">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p1_title" value="01. Архитектура Kubernetes-кластера" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="620" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_cp" value="Control Plane (управляющий слой)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=center;fontStyle=1;fontSize=13;container=1;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="280" y="60" width="320" height="300" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_user" value="Пользователь&#xa;kubectl / k9s / Lens" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_api" value="kube-apiserver&#xa;единая точка входа (REST API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="310" y="95" width="260" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_etcd" value="etcd&#xa;хранилище состояния кластера" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="670" y="95" width="180" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_sched" value="kube-scheduler&#xa;выбор ноды для пода" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="310" y="185" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_cm" value="kube-controller-manager&#xa;реконсиляция состояния" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="310" y="270" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n1" value="Worker-нода 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=center;fontStyle=1;fontSize=13;container=1;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="420" width="250" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n1_kubelet" value="kubelet (агент ноды)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="460" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n1_proxy" value="kube-proxy (сеть)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="510" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n1_rt" value="container runtime (containerd)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="560" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n1_pod" value="Pods (приложения)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="610" width="210" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n2" value="Worker-нода 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=center;fontStyle=1;fontSize=13;container=1;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="330" y="420" width="250" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n2_kubelet" value="kubelet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="460" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n2_proxy" value="kube-proxy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="510" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n2_rt" value="container runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="560" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n2_pod" value="Pods" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="610" width="210" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n3" value="Worker-нода 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;align=center;fontStyle=1;fontSize=13;container=1;collapsible=0;" vertex="1" parent="1">
+          <mxGeometry x="620" y="420" width="250" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n3_kubelet" value="kubelet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="460" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n3_proxy" value="kube-proxy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="510" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n3_rt" value="container runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="560" width="210" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_n3_pod" value="Pods" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="640" y="610" width="210" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p1_user" target="p1_api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e2" value="чтение/запись состояния" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;startArrow=block;startFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p1_api" target="p1_etcd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;" edge="1" parent="1" source="p1_api" target="p1_sched">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;" edge="1" parent="1" source="p1_api" target="p1_cm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e5" value="назначение пода" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p1_sched" target="p1_n1_kubelet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e6" value="задания / статусы" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p1_api" target="p1_n2_kubelet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p1_n1_kubelet" target="p1_n1_rt">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p1_n1_rt" target="p1_n1_pod">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p1_e9" value="правила балансировки" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p1_n1_proxy" target="p1_n1_pod">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p2-labels" name="02. Связи сущностей через labels">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="920" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p2_title" value="02. Как сущности находят друг друга: селекторы (labels)" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="680" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_dep" value="Deployment web&#xa;spec.selector.matchLabels: app=demo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_rs" value="ReplicaSet web-7c9d&#xa;selector: app=demo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="190" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_pod1" value="Pod web-7c9d-abcde&#xa;labels: app=demo | 10.244.1.7" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="290" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_pod2" value="Pod web-7c9d-fghij&#xa;labels: app=demo | 10.244.2.3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="290" width="260" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_svc" value="Service web-svc&#xa;spec.selector: app=demo&#xa;ClusterIP + DNS «web-svc»" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="660" y="100" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_ep" value="Endpoints (заполняет контроллер)&#xa;10.244.1.7:80&#xa;10.244.2.3:80" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="660" y="270" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_np" value="NetworkPolicy allow-frontend&#xa;podSelector: app=demo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="350" y="430" width="260" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_note" value="Выводы: селектор Deployment ↔ метки шаблона подов обязаны совпадать (selector иммутабелен). Смена метки у пода мгновенно меняет его Endpoints — Service и NetworkPolicy перестраиваются без перезапуска. Ingress → Service и HPA → Deployment ссылаются по ИМЕНИ, не по меткам." style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="850" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p2_dep" target="p2_rs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p2_rs" target="p2_pod1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e3" value="селектор → список IP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p2_svc" target="p2_ep">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;" edge="1" parent="1" source="p2_ep" target="p2_pod1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;" edge="1" parent="1" source="p2_ep" target="p2_pod2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#9673a6;" edge="1" parent="1" source="p2_np" target="p2_pod1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#9673a6;" edge="1" parent="1" source="p2_np" target="p2_pod2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p3-network" name="03. Путь трафика">
+    <mxGraphModel dx="1100" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p3_title" value="03. Путь трафика: Ingress → Service → Pod" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="620" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_client" value="Клиент" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="150" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_ic" value="Ingress Controller&#xa;(ingress-nginx / traefik)&#xa;NodePort или LoadBalancer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="85" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_ing" value="Ingress web&#xa;ingressClassName: nginx&#xa;demo.example.com / → web-svc:80" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="200" width="240" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_svc" value="Service web-svc&#xa;ClusterIP 10.96.0.15:80&#xa;selector: app=demo" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="205" width="230" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_dns" value="CoreDNS&#xa;web-svc → 10.96.0.15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="340" width="240" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_pod1" value="Pod web-xxx :8080 (Ready)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="340" width="230" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_pod2" value="Pod web-yyy :8080 (Ready)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="830" y="340" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_kp" value="kube-proxy (iptables/IPVS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="570" y="450" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_note" value="Ключевые точки: Ingress ссылается на Service по имени; Service находит поды по селектору меток; в балансировку попадают только Ready-поды (readinessProbe — gate); CoreDNS даёт сервисам стабильные имена." style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="530" width="940" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p3_client" target="p3_ic">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e2" value="правила host/path" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p3_ic" target="p3_ing">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e3" value="по имени" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p3_ing" target="p3_svc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p3_svc" target="p3_kp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p3_kp" target="p3_pod1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p3_kp" target="p3_pod2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3_e7" value="резолв имени" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#9673a6;fontSize=10;" edge="1" parent="1" source="p3_dns" target="p3_svc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p4-storage" name="04. Хранение PV-PVC">
+    <mxGraphModel dx="1100" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="560" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p4_title" value="04. Хранение: StatefulSet → PVC → PV → StorageClass" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_sts" value="StatefulSet db&#xa;volumeClaimTemplates:&#xa;- data: RWO, 10Gi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_pod" value="Pod db-0&#xa;volumeMounts:&#xa;data → /var/lib/postgresql/data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="230" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_pvc" value="PVC data-db-0&#xa;storageClassName: local-ssd&#xa;accessModes: RWO, 10Gi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="140" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_pv" value="PV pvc-8f3a&#xa;10Gi, RWO&#xa;reclaimPolicy: Retain" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="650" y="140" width="250" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_sc" value="StorageClass local-ssd&#xa;provisioner: ebs.csi.aws.com" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="650" y="300" width="250" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_note" value="Логика: PVC — «заявка» разработчика, PV — выделенный ресурс, StorageClass — шаблон автосоздания PV. StatefulSet создаёт по PVC на реплику (data-db-0, data-db-1…). Удаление StatefulSet НЕ удаляет PVC. reclaimPolicy: Retain — данные сохраняются после удаления PVC; Delete — удаляется и диск." style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="580" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e1" value="по PVC на каждую реплику" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p4_sts" target="p4_pvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e2" value="монтирует" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p4_pod" target="p4_pvc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e3" value="Bound" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p4_pvc" target="p4_pv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4_e4" value="динамический провижининг" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p4_sc" target="p4_pv">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="p5-cicd" name="05. Конвейер CI-CD">
+    <mxGraphModel dx="1200" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p5_title" value="05. Конвейер CI/CD: от коммита до прода (GitLab)" style="text;html=1;fontSize=16;fontStyle=1;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_dev" value="Разработчик&#xa;git push / MR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_gitlab" value="GitLab&#xa;репозиторий +&#xa;.gitlab-ci.yml (rules, stages)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="75" width="210" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_runner" value="GitLab Runner&#xa;executor: docker / shell" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="240" y="200" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_reg" value="Container Registry&#xa;myapp:main-a1b2c3d" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="700" y="80" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_s1" value="validate&#xa;lint + unit-тесты" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="330" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_s2" value="build&#xa;docker build" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="210" y="330" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_s3" value="test&#xa;интеграционные" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="330" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_s4" value="security&#xa;hadolint + trivy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="550" y="330" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_s5" value="deploy: staging&#xa;(авто, из main)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="330" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_s6" value="deploy: production&#xa;(when: manual)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="890" y="330" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_note" value="Каждая стадия — quality gate: упавший job останавливает движение дальше. Между job данные передаются через artifacts (артефакты) и cache (кеш). Runner подбирается по тегам: сборка образов — docker executor + dind, деплой — shell executor. Откат: прежний тег образа / kubectl rollout undo / helm rollback." style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+          <mxGeometry x="40" y="460" width="1010" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p5_dev" target="p5_gitlab">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e2" value="job из очереди" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p5_gitlab" target="p5_runner">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p5_runner" target="p5_s1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p5_s1" target="p5_s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p5_s2" target="p5_s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p5_s3" target="p5_s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="p5_s4" target="p5_s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e8" value="по кнопке" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p5_s5" target="p5_s6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e9" value="docker push" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p5_s2" target="p5_reg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5_e10" value="docker pull" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;dashed=1;dashPattern=4 4;strokeColor=#333333;fontSize=10;" edge="1" parent="1" source="p5_reg" target="p5_s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

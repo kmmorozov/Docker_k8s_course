@@ -1,0 +1,19 @@
+# Под с двумя контейнерами: sidecar-агент читает логи приложения (пособие 8.4)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-logger
+  labels: { app: demo, pod-pattern: sidecar }
+spec:
+  containers:
+    - name: app                       # nginx пишет логи в /var/log/nginx
+      image: nginx:1.27
+      volumeMounts:
+        - { name: logs, mountPath: /var/log/nginx }
+    - name: log-shipper               # fluent-bit читает ТОТ ЖЕ том и шлёт наружу
+      image: fluent/fluent-bit:3.1
+      volumeMounts:
+        - { name: logs, mountPath: /logs }
+  volumes:
+    - name: logs
+      emptyDir: {}

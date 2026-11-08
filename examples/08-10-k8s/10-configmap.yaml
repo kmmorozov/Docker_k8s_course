@@ -1,0 +1,12 @@
+# ConfigMap: конфигурация пода (пособие 9.1)
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: myapp-config, namespace: staging }
+data:
+  APP_ENV: "staging"
+  LOG_LEVEL: "info"
+  nginx.conf: |
+    server {
+      listen 80;
+      location / { proxy_pass http://localhost:8000; }
+    }

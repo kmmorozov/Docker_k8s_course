@@ -1,0 +1,11 @@
+# Job: задача до успешного завершения (пособие 8.8)
+apiVersion: batch/v1
+kind: Job
+metadata: { name: migrate }
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - { name: migrate, image: registry.example.com/myapp:1.4.2, command: ["python", "manage.py", "migrate"] }
