@@ -1489,28 +1489,51 @@ deploy-staging:
 - **cache** — только ускорение (зависимости): **не гарантирован** между раннерами, отчётности нет.
 
 ```yaml
-job:
+# .gitlab-ci.yml — полная job с кешем зависимостей (кеш НЕ гарантирован между раннерами)
+stages: [test]
+
+unit-tests:
+  stage: test
+  image: node:20-alpine
   cache:
     key:
-      files:                 # кеш сбрасывается при изменении перечисленных файлов
+      files:                # кеш сбрасывается при изменении перечисленных файлов
         - package-lock.json
+      prefix: node          # необязательный префикс ключа кеша
     paths:
       - node_modules/
-    policy: pull-push        # по умолчанию; «только тянуть» — pull, «только писать» — push
+    policy: pull-push       # по умолчанию; «только тянуть» — pull, «только писать» — push
+  script:
+    - npm ci
+    - npm test
 ```
 
 **Отчёты в артефактах:**
 
 ```yaml
+# .gitlab-ci.yml — полная job, публикующая тестовые и coverage-отчёты через артефакты
+stages: [test]
+
+unit-tests:
+  stage: test
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm test -- --reporters=jest-junit   # пишет report.xml (пакет jest-junit)
+    - npm run coverage                     # пишет coverage.xml (формат cobertura)
   artifacts:
-    when: always
+    when: always                    # публиковать даже при падении тестов
+    paths:
+      - report.xml
+      - coverage.xml
+      - build.env                    # файл KEY=VALUE
     reports:
-      junit: report.xml              # отображаются на вкладке Tests и в MR
-      dotenv: build.env              # экспорт переменных в СЛЕДУЮЩИЕ задания (механизм передачи IMAGE:TAG)
-      coverage_report:
+      junit: report.xml             # отображаются на вкладке Tests и в MR
+      dotenv: build.env             # экспорт переменных в СЛЕДУЮЩИЕ задания (механизм передачи IMAGE:TAG)
+      coverage_report:              # процент покрытия в UI и метрика MR
         coverage_format: cobertura
         path: coverage.xml
-  coverage: '/TOTAL.*?(\d+(?:\.\d+)?)%/'   # регулярка для процента покрытия
+  coverage: '/TOTAL.*?(\d+(?:\.\d+)?)%/'   # регулярка: парсит процент из вывода тестов
 ```
 
 **Окружения подробнее** — `on_stop` (job-«уборщик» при остановке среды — основа Review Apps), `auto_stop_in` (автоостановка), `deployment_tier`, `action`:
@@ -2207,13 +2230,21 @@ kubectl exec -it app-with-logger -c log-shipper -- sh   # shell во второ�
 **Init-контейнеры** — особые контейнеры, выполняющиеся **по очереди и до успешного завершения** перед стартом основных: ожидание БД, выставление прав на том, одноразовая подготовка данных:
 
 ```yaml
+# pod-init.yaml — под со стартом основного контейнера только после успешного init
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-init
+  labels: { app: myapp }
 spec:
-  initContainers:
+  initContainers:                 # выполняются ПО ОЧЕРЕДИ и до успешного завершения
     - name: wait-for-db
       image: busybox:1.36
-      command: ['sh', '-c', 'until nc -z db 5432; do sleep 2; done']   # ждём, пока поднимется БД
+      command: ['sh', '-c', 'until nc -z db 5432; do echo "waiting for db..."; sleep 2; done']   # ждём, пока поднимется БД
   containers:
-    - { name: app, image: myapp:1.0 }
+    - name: app
+      image: myapp:1.0
+      ports: [{ containerPort: 8000 }]
 ```
 
 ```bash
@@ -2931,7 +2962,11 @@ spec:
 **Рекомендуемые (стандартизованные) метки** — используйте их вместо самодеятельных `app/tier`:
 
 ```yaml
+# pod-standard-labels.yaml — рекомендуемые метки (Kubernetes Recommended Labels) на живом объекте
+apiVersion: v1
+kind: Pod
 metadata:
+  name: myapp-pod
   labels:
     app.kubernetes.io/name: myapp            # имя приложения
     app.kubernetes.io/instance: myapp-prod   # уникальное имя инстанса
@@ -2939,6 +2974,11 @@ metadata:
     app.kubernetes.io/component: backend     # роль в архитектуре
     app.kubernetes.io/part-of: shop          # система, частью которой является
     app.kubernetes.io/managed-by: helm       # чем управляется
+spec:
+  containers:
+    - name: myapp
+      image: myapp:2.4.1
+      ports: [{ containerPort: 8000 }]
 ```
 
 ---
@@ -2990,9 +3030,27 @@ data:
   DB_PASSWORD: UzNjcmV0IQ==
 ```
 
-Подключение к поду — два способа:
+Подключение ConfigMap и Secret к подам — два способа (полный манифест Deployment):
 
 ```yaml
+# deployment-with-config.yaml — два способа отдать приложению конфигурацию из ConfigMap/Secret
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  namespace: staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: myapp }
+  template:
+    metadata:
+      labels: { app: myapp }
+    spec:
+      containers:
+        - name: myapp
+          image: myapp:2.4.1
+          ports: [{ containerPort: 8000 }]
           # 1) Как переменные окружения
           envFrom:
             - configMapRef: { name: myapp-config }
@@ -3208,54 +3266,124 @@ spec:
 **nodeSelector** — простейшее: под только на ноды с меткой.
 
 ```yaml
-      spec:
-        nodeSelector:
-          disktype: ssd          # только ноды с меткой disktype=ssd
+# deployment-nodeselector.yaml — полный манифест: поды только на ноды с меткой disktype=ssd
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-ssd
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: myapp-ssd }
+  template:
+    metadata:
+      labels: { app: myapp-ssd }
+    spec:
+      nodeSelector:
+        disktype: ssd          # только ноды с меткой disktype=ssd
+      containers:
+        - name: myapp
+          image: myapp:1.0
+          ports: [{ containerPort: 8000 }]
 ```
 
 **Node Affinity** — расширенный nodeSelector с операторами и режимами `requiredDuringSchedulingIgnoredDuringExecution` (обязательно) / `preferredDuringSchedulingIgnoredDuringExecution` (предпочтительно).
 
 ```yaml
-      spec:
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-                - matchExpressions:
-                    - key: kubernetes.io/os
-                      operator: In
-                      values: ["linux"]
-            preferredDuringSchedulingIgnoredDuringExecution:
-              - weight: 100
-                preference:
-                  matchExpressions:
-                    - key: node-role.kubernetes.io/worker
-                      operator: Exists
+# deployment-nodeaffinity.yaml — полный манифест: обязательные и предпочтительные условия нод
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-affinity
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: myapp-affinity }
+  template:
+    metadata:
+      labels: { app: myapp-affinity }
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:   # ОБЯЗАТЕЛЬНО: без таких нод под не запустится
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values: ["linux"]
+          preferredDuringSchedulingIgnoredDuringExecution:  # ПРЕДПОЧТИТЕЛЬНО: выберет ноду с максимальным весом
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/worker
+                    operator: Exists
+      containers:
+        - name: myapp
+          image: myapp:1.0
+          ports: [{ containerPort: 8000 }]
 ```
 
 **Pod Affinity / Anti-Affinity** — размещать поды рядом друг с другом (для кеша/шардов) или, что важнее, **разносить реплики по разным нодам** (отказоустойчивость!).
 
 ```yaml
-      spec:
-        affinity:
-          podAntiAffinity:                 # НЕ размещать реплики на одной ноде
-            requiredDuringSchedulingIgnoredDuringExecution:
-              - labelSelector:
-                  matchLabels: { app: myapp }
-                topologyKey: kubernetes.io/hostname
+# deployment-antiaffinity.yaml — полный манифест: реплики РАЗНЕСЕНЫ по нодам (отказоустойчивость)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-ha
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: myapp }
+  template:
+    metadata:
+      labels: { app: myapp }
+    spec:
+      affinity:
+        podAntiAffinity:                 # НЕ размещать реплики на одной ноде
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels: { app: myapp }
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: myapp
+          image: myapp:1.0
+          ports: [{ containerPort: 8000 }]
 ```
 
 **Taints и Tolerations** — обратная логика: нода «заражена» (taint), и обычные поды на неё не попадают; попадают только те, что имеют соответствующее «противоядие» (toleration). Классика: выделенные ноды под БД, специализированные пулы.
 
 ```bash
-# Запачкать ноду: на неё не будут назначаться обычные поды
+# Запачкать ноду: на неё не будут назначаться поды без соответствующего toleration
 kubectl taint nodes node-2 dedicated=postgres:NoSchedule
-# Манифест с toleration:
-#   tolerations:
-#     - key: "dedicated"
-#       operator: "Equal"
-#       value: "postgres"
-#       effect: "NoSchedule"
+# Снять taint (минус в конце):
+kubectl taint nodes node-2 dedicated=postgres:NoSchedule-
+```
+```yaml
+# deployment-toleration.yaml — полный манифест: под, допущенный на выделенную «запачканную» ноду
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: postgres }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      tolerations:               # «противоядие» от taint dedicated=postgres:NoSchedule
+        - key: "dedicated"
+          operator: "Equal"
+          value: "postgres"
+          effect: "NoSchedule"
+      nodeSelector:
+        dedicated: postgres      # не обязателен, но сужает выбор до нод, помеченных как выделенные
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{ containerPort: 5432 }]
 ```
 
 ### 10.2. Policy
