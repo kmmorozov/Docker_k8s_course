@@ -1,11 +1,17 @@
 # DaemonSet: агент на каждой ноде (пособие 8.8)
 apiVersion: apps/v1
 kind: DaemonSet
-metadata: { name: node-exporter }
+metadata:
+  name: node-exporter
 spec:
-  selector: { matchLabels: { app: node-exporter } }
+  selector:
+    matchLabels:
+      app: node-exporter
   template:
-    metadata: { labels: { app: node-exporter } }
+    metadata:
+      labels:
+        app: node-exporter
     spec:
       containers:
-        - { name: exporter, image: prom/node-exporter:v1.8.2 }
+        - name: exporter
+          image: prom/node-exporter:v1.8.2

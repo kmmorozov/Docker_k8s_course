@@ -1,7 +1,9 @@
 # ResourceQuota: квоты namespace (пособие 10.2)
 apiVersion: v1
 kind: ResourceQuota
-metadata: { name: staging-quota, namespace: staging }
+metadata:
+  name: staging-quota
+  namespace: staging
 spec:
   hard:
     requests.cpu: "4"

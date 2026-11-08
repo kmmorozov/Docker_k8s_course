@@ -1,25 +1,38 @@
 # StatefulSet: БД с отдельным PVC на реплику (пособие 8.8, 9.3)
 apiVersion: apps/v1
 kind: StatefulSet
-metadata: { name: db }
+metadata:
+  name: db
 spec:
   serviceName: db                  # headless-сервис для стабильных DNS-имён
   replicas: 2
-  selector: { matchLabels: { app: db } }
+  selector:
+    matchLabels:
+      app: db
   template:
-    metadata: { labels: { app: db } }
+    metadata:
+      labels:
+        app: db
     spec:
       containers:
         - name: postgres
           image: postgres:16-alpine
           env:
             - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: myapp-secrets, key: DB_PASSWORD } }
-          ports: [{ containerPort: 5432 }]
+              valueFrom:
+                secretKeyRef:
+                  name: myapp-secrets
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 5432
           volumeMounts:
-            - { name: data, mountPath: /var/lib/postgresql/data }
+            - name: data
+              mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
-    - metadata: { name: data }
+    - metadata:
+        name: data
       spec:
         accessModes: [ReadWriteOnce]
-        resources: { requests: { storage: 5Gi } }
+        resources:
+          requests:
+            storage: 5Gi

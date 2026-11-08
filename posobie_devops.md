@@ -13,6 +13,7 @@ https://github.com/kmmorozov/Docker_k8s_course
 ├── программа курса.txt      # исходная программа
 ├── posobie_devops.md        # это пособие
 ├── k8s_schemes.drawio       # схемы к модулям (открывается на app.diagrams.net)
+├── addition_materials/      # инструкции по внешним системам (NFS, registry, metrics-server, ingress-nginx, cert-manager)
 └── examples/
     ├── 03-git/              # .gitignore и скрипты из разбора Git
     ├── 04-docker/           # Dockerfile'ы (python-app, multi-stage на Go)
@@ -610,6 +611,8 @@ curl -s http://localhost:5000/v2/_catalog
 curl -s http://localhost:5000/v2/myapp/tags/list
 ```
 
+**Полная инструкция** по настройке реестра (доверие клиентов по HTTP, авторизация, очистка места): `addition_materials/docker-registry-setup.md`.
+
 ### 4.8. Сборка образов Docker
 
 Образ собирается по инструкциям из файла **Dockerfile** — по одному слою на инструкцию; слои кешируются, поэтому **редко меняющиеся инструкции ставят выше**.
@@ -962,7 +965,7 @@ services:
     networks:
       - backend          # НЕ выходит во frontend: минимизация доступности
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d appdb"]
+      test ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d appdb"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -1010,9 +1013,9 @@ networks:
 
 # ---------- Именованные тома ----------
 volumes:
-  app-data:
-  db-data:
-  redis-data:
+  app-data
+  db-data
+  redis-data
 
 # ---------- Секреты ----------
 secrets:
@@ -1596,7 +1599,16 @@ test:
     - echo "Прогон против Postgres $PG_VERSION, Node $NODE_VERSION"
 ```
 
-**Надёжность заданий:** `retry: {max: 2, when: [runner_system_failure, stuck_or_timeout_failure]}` — повторять только на инфраструктурных сбоях, не маскируя реальные ошибки; `timeout: 30 minutes` на job; `interruptible: true` — отменять job при появлении нового пайплайна на той же ветке (экономит раннеры).
+**Надёжность заданий:** повторять только на инфраструктурных сбоях, не маскируя реальные ошибки:
+
+```yaml
+# .gitlab-ci.yml — повторы job на инфраструктурных сбоях (не на падениях тестов!)
+retry:
+  max: 2                                                  # сколько раз повторять
+  when: [runner_system_failure, stuck_or_timeout_failure] # на каких сбоях: только инфраструктурных
+```
+
+`timeout: 30 minutes` на job; `interruptible: true` — отменять job при появлении нового пайплайна на той же ветке (экономит раннеры).
 
 **Runner'ы: детали и ловушки.**
 
@@ -1663,9 +1675,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock   # раннер запускает job-контейнеры на демоне хоста
 
 volumes:
-  gitlab-config:
-  gitlab-logs:
-  gitlab-data:
+  gitlab-config
+  gitlab-logs
+  gitlab-data
   runner-config:
 ```
 
@@ -2202,20 +2214,24 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: app-with-logger
-  labels: { app: demo, pod-pattern: sidecar }
+  labels:
+    app: demo
+    pod-pattern: sidecar
 spec:
   containers:
     - name: app                       # основной контейнер: nginx пишет логи в /var/log/nginx
       image: nginx:1.27
       volumeMounts:
-        - { name: logs, mountPath: /var/log/nginx }
+        - name: logs
+          mountPath: /var/log/nginx
     - name: log-shipper               # sidecar: fluent-bit читает ТОТ ЖЕ том
       image: fluent/fluent-bit:3.1    # и отправляет наружу (Elastic, Loki, CloudWatch…)
       volumeMounts:
-        - { name: logs, mountPath: /logs }   # у контейнеров разные mountPath допустимы
+        - name: logs
+          mountPath: /logs # у контейнеров разные mountPath допустимы
   volumes:
     - name: logs
-      emptyDir: {}                    # разделяемый временный том жизненного цикла пода
+      emptyDir {} # разделяемый временный том жизненного цикла пода
 ```
 
 ```bash
@@ -2235,7 +2251,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: app-with-init
-  labels: { app: myapp }
+  labels:
+    app: myapp
 spec:
   initContainers:                 # выполняются ПО ОЧЕРЕДИ и до успешного завершения
     - name: wait-for-db
@@ -2244,7 +2261,8 @@ spec:
   containers:
     - name: app
       image: myapp:1.0
-      ports: [{ containerPort: 8000 }]
+      ports:
+        - containerPort: 8000
 ```
 
 ```bash
@@ -2296,18 +2314,28 @@ spec:
             - secretRef:
                 name: myapp-secrets
           resources:
-            requests: { cpu: 100m, memory: 128Mi }
-            limits:   { cpu: 500m, memory: 256Mi }
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
           livenessProbe:        # жив ли контейнер? нет — перезапуск
-            httpGet: { path: /health, port: 8000 }
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:       # готов ли принимать трафик? нет — из Service
-            httpGet: { path: /ready, port: 8000 }
+            httpGet:
+              path: /ready
+              port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
           startupProbe:         # для долго стартующих (медленные JVM и т.п.)
-            httpGet: { path: /health, port: 8000 }
+            httpGet:
+              path: /health
+              port: 8000
             failureThreshold: 30
             periodSeconds: 5
 ```
@@ -2360,6 +2388,8 @@ sudo firewall-cmd --permanent --add-port=10252/tcp       # controller-manager
 sudo firewall-cmd --permanent --add-port=10257/tcp       # controller-manager (счётчик)
 sudo firewall-cmd --permanent --add-port=10259/tcp       # scheduler (счётчик)
 sudo firewall-cmd --permanent --add-port=30000-32767/tcp # NodePort
+sudo firewall-cmd --permanent --add-port=4789/udp          # kube-router: VXLAN между нодами
+# (для варианта с Flannel вместо этого: 8472/udp)
 sudo firewall-cmd --reload
 ```
 
@@ -2399,7 +2429,7 @@ sudo dnf versionlock kubelet kubeadm kubectl
 ```bash
 # ===== 4. Инициализация control plane (только k8s-cp-01) =====
 sudo kubeadm init \
-  --pod-network-cidr=10.244.0.0/16 \           # под CNI Flannel; для Calico — 192.168.0.0/16
+  --pod-network-cidr=10.244.0.0/16 \           # под CNI (основной — kube-router; для Calico — 192.168.0.0/16)
   --apiserver-advertise-address=192.168.56.10
 # В конце kubeadm напечатает команду kubeadm join <ip>:6443 --token … --discovery-token-ca-cert-hash …
 # СОХРАНИТЕ её. Восстановить можно так:
@@ -2411,9 +2441,21 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 # ===== 6. Сеть подов — CNI (только control plane) =====
-kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
-# Альтернатива с NetworkPolicy: kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/calico.yaml
+# ВАРИАНТ А (основной) — kube-router: сеть подов (VXLAN между нодами) + исполнение NetworkPolicy
+# одним DaemonSet'ом. Манифест для kubeadm: service proxy выключен (--run-service-proxy=false),
+# kube-proxy остаётся штатным. RBAC и CNI-конфиг применяются в комплекте.
+kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
+kubectl -n kube-system get pods -l k8s-app=kube-router -o wide   # по поду kube-router на каждой ноде
 
+# ВАРИАНТ Б — Flannel: максимально простой «просто сеть подов», но NetworkPolicy НЕ исполняет —
+# пример 16-network-policy.yaml (модуль 8.9) с ним ничего не ограничит, ставьте ради сравнения CNI:
+# kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+# Другие CNI (Calico, Cilium) — аналогично: kubectl apply -f <манифест CNI> до join'а воркеров.
+```
+
+**Выбор CNI.** CNI — плагин сети подов: без него поды не получают IP и не общаются между нодами, а coredns не поднимается. На стенде курса — **kube-router**: помимо маршрутизации (VXLAN поверх сети нод, порт 4789/udp открыт на шаге 1) он **исполняет NetworkPolicy** — объекты из §8.9 и `examples/08-10-k8s/16-network-policy.yaml` реально отсекают трафик. **Flannel** — минималистичная «просто сеть»: легче и привычнее, но NetworkPolicy с ним ничего не ограничивает (манифесты применятся, трафик пойдёт как шёл). kube-router работает DaemonSet'ом (под на каждой ноде), service proxy остаётся штатным kube-proxy. В проде выбор шире: **Calico** (сеть + политики + BGP-маршрутизация без оверлея) и **Cilium** (eBPF: производительность, L7-политики, observability через Hubble).
+
+```bash
 # ===== 7. Single-node стенд: разрешить поды на control plane =====
 kubectl taint nodes k8s-cp-01 node-role.kubernetes.io/control-plane:NoSchedule-
 
@@ -2425,7 +2467,7 @@ sudo kubeadm join 192.168.56.10:6443 --token <TOKEN> --discovery-token-ca-cert-h
 ```bash
 # ===== 9. Проверка =====
 kubectl get nodes -o wide        # STATUS Ready у всех нод
-kubectl get pods -A -o wide      # kube-system поды Running (coredns поднимется после CNI)
+kubectl get pods -A -o wide      # kube-system: kube-router (или flannel) и coredns — Running
 kubectl run smoke --image=nginx:1.27 --restart=Never
 kubectl get pod smoke -o wide    # IP из сети 10.244.0.0/16 = CNI работает
 kubectl delete pod smoke
@@ -2460,6 +2502,8 @@ kubectl autoscale deployment myapp --cpu-percent=70 --min=2 --max=10
 kubectl get hpa
 kubectl top pods
 ```
+
+Установка metrics-server на кластер из §8.5 (в т.ч. лечение ошибки x509 на bare-metal): `addition_materials/metrics-server-setup.md`.
 
 #### 8.6.1. k9s — терминальный интерфейс (TUI) к кластеру
 
@@ -2666,96 +2710,135 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: web
-  labels: { app: demo }            # метки — «точки соприкосновения» с другими объектами
+  labels:
+    app: demo # метки — «точки соприкосновения» с другими объектами
 spec:
   containers:
     - name: web
       image: nginx:1.27
-      ports: [{ containerPort: 80 }]
+      ports:
+        - containerPort: 80
 ```
 
 ```yaml
 # replicaset.yaml — демонстрационно (в работе используйте Deployment)
 apiVersion: apps/v1
 kind: ReplicaSet
-metadata: { name: web }
+metadata:
+  name: web
 spec:
   replicas: 2
   selector:                        # КАКИЕ поды считать своими
-    matchLabels: { app: demo }
+    matchLabels:
+      app: demo
   template:                        # КАКИЕ поды создавать
-    metadata: { labels: { app: demo } }   # селектор и метки шаблона ОБЯЗАНЫ совпадать
+    metadata:
+      labels:
+        app: demo # селектор и метки шаблона ОБЯЗАНЫ совпадать
     spec:
-      containers: [{ name: web, image: nginx:1.27, ports: [{ containerPort: 80 }] }]
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - containerPort: 80
 ```
 
 ```yaml
 # deployment.yaml — сжатый вариант (полный с пробами, лимитами и env — в 8.4)
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: web }
+metadata:
+  name: web
 spec:
   replicas: 3
-  selector: { matchLabels: { app: demo } }
+  selector:
+    matchLabels:
+      app: demo
   template:
-    metadata: { labels: { app: demo } }
+    metadata:
+      labels:
+        app: demo
     spec:
-      containers: [{ name: web, image: nginx:1.27 }]
+      containers:
+        - name: web
+          image: nginx:1.27
 ```
 
 ```yaml
 # statefulset.yaml — БД со своим хранилищем на реплику
 apiVersion: apps/v1
 kind: StatefulSet
-metadata: { name: db }
+metadata:
+  name: db
 spec:
   serviceName: db                  # headless-сервис для стабильных DNS-имён
   replicas: 2
-  selector: { matchLabels: { app: db } }
+  selector:
+    matchLabels:
+      app: db
   template:
-    metadata: { labels: { app: db } }
+    metadata:
+      labels:
+        app: db
     spec:
       containers:
         - name: postgres
           image: postgres:16
-          ports: [{ containerPort: 5432 }]
-          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:            # PVC на каждую реплику: data-db-0, data-db-1, …
-    - metadata: { name: data }
+    - metadata:
+        name: data
       spec:
         accessModes: [ReadWriteOnce]
-        resources: { requests: { storage: 5Gi } }
+        resources:
+          requests:
+            storage: 5Gi
 ```
 
 ```yaml
 # daemonset.yaml — агент на каждой ноде
 apiVersion: apps/v1
 kind: DaemonSet
-metadata: { name: node-exporter }
+metadata:
+  name: node-exporter
 spec:
-  selector: { matchLabels: { app: node-exporter } }
+  selector:
+    matchLabels:
+      app: node-exporter
   template:
-    metadata: { labels: { app: node-exporter } }
+    metadata:
+      labels:
+        app: node-exporter
     spec:
-      containers: [{ name: exporter, image: prom/node-exporter:v1.8.2 }]
+      containers:
+        - name: exporter
+          image: prom/node-exporter:v1.8.2
 ```
 
 ```yaml
 # job.yaml и cronjob.yaml
 apiVersion: batch/v1
 kind: Job
-metadata: { name: migrate }
+metadata:
+  name: migrate
 spec:
   backoffLimit: 3                  # столько раз можно перезапустить под при ошибке
   template:
     spec:
       restartPolicy: Never         # Job сам решает о перезапуске
       containers:
-        - { name: migrate, image: myapp:1.0, command: ["./manage.py", "migrate"] }
+        - name: migrate
+          image: myapp:1.0
+          command: ["./manage.py", "migrate"]
 ---
 apiVersion: batch/v1
 kind: CronJob
-metadata: { name: backup }
+metadata:
+  name: backup
 spec:
   schedule: "0 3 * * *"            # cron-формат
   jobTemplate:
@@ -2764,7 +2847,9 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-            - { name: backup, image: alpine:3.20, command: ["sh", "-c", "tar czf /backup/data.tgz /data"] }
+            - name: backup
+              image: alpine:3.20
+              command: ["sh", "-c", "tar czf /backup/data.tgz /data"]
 ```
 
 #### Объекты конфигурации
@@ -2780,11 +2865,14 @@ kubectl create serviceaccount ci-bot --namespace shop
 ```yaml
 apiVersion: v1
 kind: Namespace
-metadata: { name: shop }
+metadata:
+  name: shop
 ---
 apiVersion: v1
 kind: ConfigMap
-metadata: { name: app-config, namespace: shop }
+metadata:
+  name: app-config
+  namespace: shop
 data:
   APP_ENV: "prod"
   app.conf: |                    # целый файл внутри ConfigMap
@@ -2792,7 +2880,9 @@ data:
 ---
 apiVersion: v1
 kind: Secret
-metadata: { name: db-secret, namespace: shop }
+metadata:
+  name: db-secret
+  namespace: shop
 type: Opaque
 data:                            # base64: echo -n 'S3cret!' | base64
   password: UzNjcmV0IQ==
@@ -2801,7 +2891,9 @@ stringData:                      # альтернатива: открытый т
 ---
 apiVersion: v1
 kind: ServiceAccount
-metadata: { name: ci-bot, namespace: shop }   # поды используют: serviceAccountName: ci-bot
+metadata:
+  name: ci-bot
+  namespace: shop # поды используют: serviceAccountName: ci-bot
 ```
 
 #### Сетевые объекты
@@ -2819,22 +2911,33 @@ kubectl create ingress web --class=nginx --rule="demo.example.com/*=web-svc:80"
 ```yaml
 apiVersion: v1
 kind: Service
-metadata: { name: web-svc }
+metadata:
+  name: web-svc
 spec:
-  selector: { app: demo }         # ЧЕРЕЗ ЭТИ МЕТКИ находит поды (см. 8.9)
-  ports: [{ port: 80, targetPort: 8080 }]
+  selector:
+    app: demo # ЧЕРЕЗ ЭТИ МЕТКИ находит поды (см. 8.9)
+  ports:
+    - port: 80
+      targetPort: 8080
 # Headless-вариант: clusterIP: None — DNS возвращает IP всех подов
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-metadata: { name: web }
+metadata:
+  name: web
 spec:
   ingressClassName: nginx
   rules:
     - host: demo.example.com
       http:
         paths:
-          - { path: /, pathType: Prefix, backend: { service: { name: web-svc, port: { number: 80 } } } }
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-svc
+                port:
+                  number: 80
 ```
 
 #### Объекты хранения
@@ -2848,27 +2951,39 @@ kubectl get pv,pvc,storageclass
 ```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
-metadata: { name: nfs-csi }
+metadata:
+  name: nfs-csi
 provisioner: nfs.csi.k8s.io        # в облаке: ebs.csi.aws.com, disk.csi.azure.com…
-parameters: { server: nfs.local, share: /exports }
+parameters:
+  server: nfs.local
+  share: /exports
 ---
 apiVersion: v1
 kind: PersistentVolume
-metadata: { name: pv-nfs-01 }
+metadata:
+  name: pv-nfs-01
 spec:
-  capacity: { storage: 10Gi }
+  capacity:
+    storage: 10Gi
   accessModes: [ReadWriteMany]
-  nfs: { server: nfs.local, path: /exports/pv01 }
+  nfs:
+    server: nfs.local
+    path: /exports/pv01
   persistentVolumeReclaimPolicy: Retain
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
-metadata: { name: app-data }
+metadata:
+  name: app-data
 spec:
   storageClassName: nfs-csi
   accessModes: [ReadWriteOnce]
-  resources: { requests: { storage: 5Gi } }
+  resources:
+    requests:
+      storage: 5Gi
 ```
+
+**Инструкция по поднятию NFS-сервера (Rocky 10)** — каталоги `/exports`, `no_root_squash`, firewall, SELinux и динамический провиженер для StorageClass `nfs-csi`: `addition_materials/nfs-server-setup.md`.
 
 ### 8.9. Взаимодействие сущностей через метки (labels)
 
@@ -2925,32 +3040,55 @@ kubectl delete pods -l 'app=shop'                  # удаление по се�
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
-metadata: { name: backend }
+metadata:
+  name: backend
 spec:
   replicas: 2
-  selector: { matchLabels: { app: shop, tier: backend } }   # ① ищет свои поды
+  selector:
+    matchLabels:
+      app: shop
+      tier: backend # ① ищет свои поды
   template:
-    metadata: { labels: { app: shop, tier: backend } }      # ② ставит эти метки
+    metadata:
+      labels:
+        app: shop
+        tier: backend # ② ставит эти метки
     spec:
-      containers: [{ name: be, image: nginx:1.27 }]
+      containers:
+        - name: be
+          image: nginx:1.27
 ---
 apiVersion: v1
 kind: Service
-metadata: { name: backend }
+metadata:
+  name: backend
 spec:
-  selector: { app: shop, tier: backend }                    # ③ находит те же поды
-  ports: [{ port: 80, targetPort: 80 }]
+  selector:
+    app: shop
+    tier: backend # ③ находит те же поды
+  ports:
+    - port: 80
+      targetPort: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
-metadata: { name: allow-frontend }
+metadata:
+  name: allow-frontend
 spec:
-  podSelector: { matchLabels: { app: shop, tier: backend } } # ④ политика применяется к ним же
+  podSelector:
+    matchLabels:
+      app: shop
+      tier: backend # ④ политика применяется к ним же
   policyTypes: [Ingress]
   ingress:
     - from:
-        - podSelector: { matchLabels: { app: shop, tier: frontend } }  # ⑤ источник — фронты по метке
-      ports: [{ protocol: TCP, port: 80 }]
+        - podSelector:
+            matchLabels:
+              app: shop
+              tier: frontend # ⑤ источник — фронты по метке
+      ports:
+        - protocol: TCP
+          port: 80
 ```
 
 **Правила, которые спасают:**
@@ -2978,7 +3116,8 @@ spec:
   containers:
     - name: myapp
       image: myapp:2.4.1
-      ports: [{ containerPort: 8000 }]
+      ports:
+        - containerPort: 8000
 ```
 
 ---
@@ -3042,19 +3181,24 @@ metadata:
 spec:
   replicas: 2
   selector:
-    matchLabels: { app: myapp }
+    matchLabels:
+      app: myapp
   template:
     metadata:
-      labels: { app: myapp }
+      labels:
+        app: myapp
     spec:
       containers:
         - name: myapp
           image: myapp:2.4.1
-          ports: [{ containerPort: 8000 }]
+          ports:
+            - containerPort: 8000
           # 1) Как переменные окружения
           envFrom:
-            - configMapRef: { name: myapp-config }
-            - secretRef:    { name: myapp-secrets }
+            - configMapRef:
+                name: myapp-config
+            - secretRef:
+                name: myapp-secrets
           env:
             - name: DB_HOST
               value: "postgres.backend"        # обычное значение
@@ -3118,7 +3262,8 @@ metadata:
   namespace: staging
 spec:
   clusterIP: None
-  selector: { app: postgres }
+  selector:
+    app: postgres
   ports:
     - port: 5432
       targetPort: 5432
@@ -3126,7 +3271,7 @@ spec:
 
 **DNS в Kubernetes** — CoreDNS. Формат имён: `<service>.<namespace>.svc.cluster.local`, внутри того же namespace — просто `<service>`. Поэтому приложение обращается к БД как `postgres` или `postgres.backend`.
 
-**Ingress** — HTTP/HTTPS-маршрутизатор «входа» в кластер: один внешний IP/LB принимает трафик и по host/path раскладывает его на Services. Требует контроллера (**ingress-nginx, traefik**) и обычно классический для веба кейс: терминация TLS + маршрутизация.
+**Ingress** — HTTP/HTTPS-маршрутизатор «входа» в кластер: один внешний IP/LB принимает трафик и по host/path раскладывает его на Services. Требует контроллера (**ingress-nginx, traefik**) и обычно классический для веба кейс: терминация TLS + маршрутизация. Установка контроллера ingress-nginx на стенд из §8.5: `addition_materials/ingress-nginx-setup.md`; автоматический TLS — `addition_materials/cert-manager-setup.md`.
 
 ```yaml
 # ingress.yaml
@@ -3197,17 +3342,22 @@ spec:
   serviceName: postgres     # headless service (см. выше)
   replicas: 1
   selector:
-    matchLabels: { app: postgres }
+    matchLabels:
+      app: postgres
   template:
     metadata:
-      labels: { app: postgres }
+      labels:
+        app: postgres
     spec:
       containers:
         - name: postgres
           image: postgres:16-alpine
           env:
             - name: POSTGRES_PASSWORD
-              valueFrom: { secretKeyRef: { name: myapp-secrets, key: DB_PASSWORD } }
+              valueFrom:
+                secretKeyRef:
+                  name: myapp-secrets
+                  key: DB_PASSWORD
           ports:
             - containerPort: 5432
           volumeMounts:
@@ -3220,7 +3370,8 @@ spec:
         accessModes: [ReadWriteOnce]
         storageClassName: local-ssd
         resources:
-          requests: { storage: 10Gi }
+          requests:
+            storage: 10Gi
 ```
 
 **AccessModes**: `ReadWriteOnce (RWO)` — один нод на запись; `ReadOnlyMany (ROX)`; `ReadWriteMany (RWX)` — несколько нод. Ключевая идея модуля: **эфемерные поды + постоянные PVC = переживаемые данные**.
@@ -3246,7 +3397,7 @@ spec:
 - Аннотации зависят от контроллера (nginx, traefik, haprove — разные префиксы и возможности; смотрите документацию именно вашего).
 - `pathType`: `Exact` (точное совпадение), `Prefix` (по префиксу), `ImplementationSpecific` (на усмотрение контроллера).
 - В кластере может быть **несколько контроллеров** — тогда `ingressClassName` обязателен, иначе Ingress может никем не обрабатываться.
-- Для автоматического HTTPS ставят **cert-manager**: он по аннотации (см. пример в 9.2) сам выпускает и продлевает сертификаты Let's Encrypt.
+- Для автоматического HTTPS ставят **cert-manager**: он по аннотации (см. пример в 9.2) сам выпускает и продлевает сертификаты Let's Encrypt. Установка и ClusterIssuer: `addition_materials/cert-manager-setup.md`.
 
 **PV/PVC — тонкости:**
 - `persistentVolumeReclaimPolicy`: **Retain** (PV сохраняется после удаления PVC — ручная чистка, безопасно для ценных данных) vs **Delete** (удаляется и диск под ним — стандарт облачных StorageClass, осторожно!).
@@ -3274,17 +3425,20 @@ metadata:
 spec:
   replicas: 2
   selector:
-    matchLabels: { app: myapp-ssd }
+    matchLabels:
+      app: myapp-ssd
   template:
     metadata:
-      labels: { app: myapp-ssd }
+      labels:
+        app: myapp-ssd
     spec:
       nodeSelector:
         disktype: ssd          # только ноды с меткой disktype=ssd
       containers:
         - name: myapp
           image: myapp:1.0
-          ports: [{ containerPort: 8000 }]
+          ports:
+            - containerPort: 8000
 ```
 
 **Node Affinity** — расширенный nodeSelector с операторами и режимами `requiredDuringSchedulingIgnoredDuringExecution` (обязательно) / `preferredDuringSchedulingIgnoredDuringExecution` (предпочтительно).
@@ -3298,10 +3452,12 @@ metadata:
 spec:
   replicas: 2
   selector:
-    matchLabels: { app: myapp-affinity }
+    matchLabels:
+      app: myapp-affinity
   template:
     metadata:
-      labels: { app: myapp-affinity }
+      labels:
+        app: myapp-affinity
     spec:
       affinity:
         nodeAffinity:
@@ -3320,7 +3476,8 @@ spec:
       containers:
         - name: myapp
           image: myapp:1.0
-          ports: [{ containerPort: 8000 }]
+          ports:
+            - containerPort: 8000
 ```
 
 **Pod Affinity / Anti-Affinity** — размещать поды рядом друг с другом (для кеша/шардов) или, что важнее, **разносить реплики по разным нодам** (отказоустойчивость!).
@@ -3334,21 +3491,25 @@ metadata:
 spec:
   replicas: 3
   selector:
-    matchLabels: { app: myapp }
+    matchLabels:
+      app: myapp
   template:
     metadata:
-      labels: { app: myapp }
+      labels:
+        app: myapp
     spec:
       affinity:
         podAntiAffinity:                 # НЕ размещать реплики на одной ноде
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
-                matchLabels: { app: myapp }
+                matchLabels:
+                  app: myapp
               topologyKey: kubernetes.io/hostname
       containers:
         - name: myapp
           image: myapp:1.0
-          ports: [{ containerPort: 8000 }]
+          ports:
+            - containerPort: 8000
 ```
 
 **Taints и Tolerations** — обратная логика: нода «заражена» (taint), и обычные поды на неё не попадают; попадают только те, что имеют соответствующее «противоядие» (toleration). Классика: выделенные ноды под БД, специализированные пулы.
@@ -3368,10 +3529,12 @@ metadata:
 spec:
   replicas: 1
   selector:
-    matchLabels: { app: postgres }
+    matchLabels:
+      app: postgres
   template:
     metadata:
-      labels: { app: postgres }
+      labels:
+        app: postgres
     spec:
       tolerations:               # «противоядие» от taint dedicated=postgres:NoSchedule
         - key: "dedicated"
@@ -3383,7 +3546,8 @@ spec:
       containers:
         - name: postgres
           image: postgres:16-alpine
-          ports: [{ containerPort: 5432 }]
+          ports:
+            - containerPort: 5432
 ```
 
 ### 10.2. Policy
@@ -3393,7 +3557,7 @@ spec:
 - **ResourceQuota** — жёсткие лимиты ресурсов на namespace (в сумме по всем объектам): CPU, память, число подов/сервисов.
 - **LimitRange** — дефолтные и максимальные requests/limits для контейнеров в namespace (защита от «безлимитных» подов).
 - **Pod Security Standards (PSS)** / встроенный **Pod Security Admission**: уровни `Privileged` / `Baseline` / `Restricted` — запрещают root, hostNetwork, привилегированные контейнеры и пр. (пришли на смену deprecated PodSecurityPolicy).
-- **NetworkPolicy** — файрвол L3/L4 между подами: «кто кому может ходить» (требует сетевого плагина: Calico, Cilium).
+- **NetworkPolicy** — файрвол L3/L4 между подами: «кто кому может ходить» (требует сетевого плагина с поддержкой политик: на стенде — kube-router; в проде — Calico, Cilium).
 
 ```yaml
 # resourcequota.yaml — квоты namespace
@@ -3418,12 +3582,14 @@ metadata:
   namespace: staging
 spec:
   podSelector:
-    matchLabels: { app: postgres }        # на ком политика
+    matchLabels:
+      app: postgres # на ком политика
   policyTypes: [Ingress]
   ingress:
     - from:
         - podSelector:
-            matchLabels: { app: frontend }
+            matchLabels:
+              app: frontend
       ports:
         - protocol: TCP
           port: 5432
@@ -3445,12 +3611,14 @@ spec:
     app: myapp
   template:
     metadata:
-      labels: { app: myapp }
+      labels:
+        app: myapp
     spec:
       containers:
         - name: app
           image: nginx:1.27
-          ports: [{ containerPort: 80 }]
+          ports:
+            - containerPort: 80
 ```
 
 **ReplicaSet vs Deployment**: ReplicaSet управляет репликами, но сам не умеет обновлять шаблон пода — меняете `image` в RS вручную, ничего не происходит. Deployment изменяет свой ReplicaSet на новый и проводит **rolling update** со стратегией `maxSurge/maxUnavailable`, сохраняя историю ревизий для отката. Поэтому в реальной работе: **только Deployment**.
@@ -3498,8 +3666,12 @@ ingress:
   enabled: true
   host: staging.example.com
 resources:
-  requests: { cpu: 100m, memory: 128Mi }
-  limits:   { cpu: 500m, memory: 256Mi }
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
 ```
 
 ```yaml
@@ -3507,23 +3679,23 @@ resources:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}              # имя релиза (инстанса chart)
+  name: {{.Release.Name}} # имя релиза (инстанса chart)
   labels:
-    app: {{ .Chart.Name }}
+    app: {{.Chart.Name}}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{.Values.replicaCount}}
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}
+      app: {{.Chart.Name}}
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}
+        app: {{.Chart.Name}}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{.Chart.Name}}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{.Values.image.pullPolicy}}
           ports:
             - containerPort: 8000
           resources:
@@ -3645,8 +3817,8 @@ helm history myapp-staging -n staging --max 10
 
 ```yaml
 {{- define "myapp.labels" -}}
-app: {{ .Chart.Name }}
-release: {{ .Release.Name }}
+app: {{.Chart.Name}}
+release: {{.Release.Name}}
 {{- end }}
 
 metadata:

@@ -1,12 +1,20 @@
 # ReplicaSet (демонстрационно; в работе используйте Deployment) — пособие 8.8
 apiVersion: apps/v1
 kind: ReplicaSet
-metadata: { name: web }
+metadata:
+  name: web
 spec:
   replicas: 2
   selector:                        # какие поды считать своими
-    matchLabels: { app: demo }
+    matchLabels:
+      app: demo
   template:                        # какие поды создавать
-    metadata: { labels: { app: demo } }
+    metadata:
+      labels:
+        app: demo
     spec:
-      containers: [{ name: web, image: nginx:1.27, ports: [{ containerPort: 80 }] }]
+      containers:
+        - name: web
+          image: nginx:1.27
+          ports:
+            - containerPort: 80

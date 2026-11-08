@@ -3,7 +3,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: myapp-with-init
-  labels: { app: myapp }
+  labels:
+    app: myapp
 spec:
   initContainers:
     - name: wait-for-db
@@ -12,4 +13,5 @@ spec:
   containers:
     - name: app
       image: registry.example.com/myapp:1.4.2
-      ports: [{ containerPort: 8000 }]
+      ports:
+        - containerPort: 8000

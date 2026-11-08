@@ -4,7 +4,8 @@ kind: Deployment
 metadata:
   name: myapp
   namespace: staging
-  labels: { app: myapp }
+  labels:
+    app: myapp
 spec:
   replicas: 3
   revisionHistoryLimit: 5
@@ -14,10 +15,12 @@ spec:
       maxSurge: 1
       maxUnavailable: 0
   selector:
-    matchLabels: { app: myapp }
+    matchLabels:
+      app: myapp
   template:
     metadata:
-      labels: { app: myapp }
+      labels:
+        app: myapp
     spec:
       containers:
         - name: app
@@ -25,20 +28,32 @@ spec:
           ports:
             - containerPort: 8000
           envFrom:
-            - configMapRef: { name: myapp-config }
-            - secretRef:    { name: myapp-secrets }
+            - configMapRef:
+                name: myapp-config
+            - secretRef:
+                name: myapp-secrets
           resources:
-            requests: { cpu: 100m, memory: 128Mi }
-            limits:   { cpu: 500m, memory: 256Mi }
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
           livenessProbe:
-            httpGet: { path: /health, port: 8000 }
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
-            httpGet: { path: /ready, port: 8000 }
+            httpGet:
+              path: /ready
+              port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
           startupProbe:
-            httpGet: { path: /health, port: 8000 }
+            httpGet:
+              path: /health
+              port: 8000
             failureThreshold: 30
             periodSeconds: 5

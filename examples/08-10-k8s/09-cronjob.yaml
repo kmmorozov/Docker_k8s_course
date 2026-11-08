@@ -1,7 +1,8 @@
 # CronJob: задача по расписанию (пособие 8.8)
 apiVersion: batch/v1
 kind: CronJob
-metadata: { name: backup }
+metadata:
+  name: backup
 spec:
   schedule: "0 3 * * *"
   jobTemplate:
@@ -10,4 +11,6 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-            - { name: backup, image: alpine:3.20, command: ["sh", "-c", "tar czf /backup/data.tgz /data"] }
+            - name: backup
+              image: alpine:3.20
+              command: ["sh", "-c", "tar czf /backup/data.tgz /data"]

@@ -26,8 +26,12 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           livenessProbe:
-            httpGet: { path: /health, port: 8000 }
+            httpGet:
+              path: /health
+              port: 8000
             initialDelaySeconds: 10
           readinessProbe:
-            httpGet: { path: /ready, port: 8000 }
+            httpGet:
+              path: /ready
+              port: 8000
             initialDelaySeconds: 5
